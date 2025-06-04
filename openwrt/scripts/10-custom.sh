@@ -28,21 +28,6 @@ if curl -s "$mirror/openwrt/24-config-common" | grep -q "^CONFIG_PACKAGE_luci-ap
     rm -rf nikki
 fi
 
-# tailscale
-if curl -s "$mirror/openwrt/24-config-common" | grep -q "^CONFIG_PACKAGE_luci-app-tailscale=y"; then
-    git clone https://$github/asvow/luci-app-tailscale package/new/luci-app-tailscale --depth=1
-    mkdir -p files/etc/hotplug.d/iface
-    curl -skLo files/etc/hotplug.d/iface/99-tailscale-needs $mirror/openwrt/files/etc/hotplug.d/iface/99-tailscale-needs
-    # make sure tailscale is always latest
-    ts_version=$(curl -s https://api.github.com/repos/tailscale/tailscale/releases/latest | grep -oP '(?<="tag_name": ")[^"]*' | sed 's/^v//')
-    ts_tarball="tailscale-${ts_version}.tar.gz"
-    curl -skLo "${ts_tarball}" "https://codeload.github.com/tailscale/tailscale/tar.gz/v${ts_version}"
-    ts_hash=$(sha256sum "${ts_tarball}" | awk '{print $1}')
-    rm -rf "${ts_tarball}"
-    sed -i "s/PKG_VERSION:=.*/PKG_VERSION:=${ts_version}/" package/feeds/packages/tailscale/Makefile
-    sed -i "s/PKG_HASH:=.*/PKG_HASH:=${ts_hash}/" package/feeds/packages/tailscale/Makefile
-fi
-
 # qosmate
 if curl -s "$mirror/openwrt/24-config-common" | grep -q "^CONFIG_PACKAGE_luci-app-qosmate=y"; then
     git clone https://$github/hudra0/qosmate package/new/qosmate --depth=1
@@ -53,7 +38,6 @@ fi
 git clone https://$github/JohnsonRan/packages_utils_boltbrowser package/new/boltbrowser
 git clone https://$github/JohnsonRan/packages_net_speedtest-ex package/new/speedtest-ex
 git clone https://$github/JohnsonRan/packages_utils_neko-status package/new/neko
-git clone https://$github/JohnsonRan/InfinityDuck package/new/InfinityDuck --depth=1
 rm -rf package/feeds/packages/v2ray-geodata
 git clone https://$github/JohnsonRan/packages_net_v2ray-geodata package/new/v2ray-geodata --depth=1
 sed -i "s/GEOX_VER:=.*/GEOX_VER:=$(date +%Y%m%d%H%M)/" package/new/v2ray-geodata/Makefile
